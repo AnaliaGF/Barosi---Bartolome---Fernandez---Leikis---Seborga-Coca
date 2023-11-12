@@ -1,11 +1,11 @@
 class Obra:
     def _init_(self,id,nombre,entorno,id_etapa,id_tipo_obra,id_area_responsable,descripcion,monto_contrato,id_barrio,direccion,latitud,longitud,fecha_inicio,fecha_fin_inicial,plazo_meses,porcentaje_avance,imagen_1,imagen_2,imagen_3,imagen_4,id_empresa,licitacion_anio,id_licitacion,nro_contratacion,beneficiarios,link_interno,pliego_descarga,expediente_numero):
-        self.id
-        self.nombre
-        self.entorno
-        self.id_etapa
-        self.id_tipo_obra
-        self.id_area_responsable
+        self.id = id
+        self.nombre = nombre
+        self.entorno = entorno
+        self.id_etapa = id_etapa
+        self.id_tipo_obra = id_tipo_obra
+        self.id_area_responsable = id_area_responsable
         self.descripcion
         self.monto_contrato
         self.id_barrio
