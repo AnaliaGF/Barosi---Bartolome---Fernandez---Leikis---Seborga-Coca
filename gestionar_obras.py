@@ -42,4 +42,3 @@ gestion = GestionarObra()
 
 gestion.extraer_datos()
 gestion.limpiar_datos()
-
