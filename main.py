@@ -1,6 +1,6 @@
 from modelo_orm import *
 
-obranueva = obra(nombre = "kakaka")
+obranueva = Obra(nombre = "kakaka")
 
 print(obranueva.nombre)
 
