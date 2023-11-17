@@ -1,15 +1,25 @@
 from modelo_orm import *
+from gestionar_obras import GestionarObra
 
-obranueva = Obra(nombre = "kakaka")
+gestion = GestionarObra()
 
-print(obranueva.nombre)
+gestion.conectar_db()
+gestion.mapear_orm()
 
+# Ejercicio 6
+obra1 = gestion.nueva_obra()
+obra2 = gestion.nueva_obra()
 
-obranueva.nombre = "Soterramiento tren Sarmiento"
+# Inicio Ejercicio 7
 
-print(obranueva.nombre)
+# Ejercicio 8
+obra1.nuevo_proyecto()
+obra2.nuevo_proyecto()
 
-
-obranueva.descripcion = "El tren tiene que pasar por abajo"
-obranueva.beneficiario = "La comunidad en su conjunto"
-
+print("Información de la primera obra despues de iniciar el proyecto:")
+for key, value in obra1.__dict__.items():
+    print(f"{key}: {value}")
+    
+print("Información de la primera obra despues de iniciar el proyecto:")
+for key, value in obra2.__dict__.items():
+    print(f"{key}: {value}")
