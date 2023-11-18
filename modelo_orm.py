@@ -1,9 +1,7 @@
 import datetime
 from peewee import *
 
-# db = SqliteDatabase("obras_urbanas.db")
 db = Proxy()
-
 
 class BaseModel(Model):
     id = PrimaryKeyField()
@@ -16,22 +14,17 @@ class BaseModel(Model):
 class Etapa(BaseModel):
     pass
 
-
 class Tipo_obra(BaseModel):
     pass
-
 
 class Area_responsable(BaseModel):
     pass
 
-
 class Barrio(BaseModel):
-    pass
-
+    comuna = CharField()
 
 class Empresa(BaseModel):
     cuit = CharField()
-
 
 class Tipo_licitacion(BaseModel):
     pass
@@ -67,7 +60,7 @@ class Obra(BaseModel):
     nro_contratacion = CharField(null=True)
     mano_obra = CharField(null=True)
 
-# Inicio Ejercicio 5
+    # Inicio Ejercicio 5
 
     def nuevo_proyecto(self):
         if self.id_etapa is not None:
@@ -85,24 +78,24 @@ class Obra(BaseModel):
     
         print("Nuevo proyecto de obra iniciado.")
     
-        def iniciar_contratacion(self):
-            pass
-          
-        def adjudicar_obra(self):
-            pass
-          
-        def iniciar_obra(self):
-            pass
-          
-        def actualizar_porcentaje_avance(self):
-            pass
-          
-        def incrementar_plazo(self):
-            pass
-          
-        def incrementar_mano_obra(self):
-            pass
-          
-        def finalizar_obra(self):
-            pass
+    def iniciar_contratacion(self):
+        pass
+        
+    def adjudicar_obra(self):
+        pass
+        
+    def iniciar_obra(self):
+        pass
+        
+    def actualizar_porcentaje_avance(self):
+        pass
+        
+    def incrementar_plazo(self):
+        pass
+        
+    def incrementar_mano_obra(self):
+        pass
+        
+    def finalizar_obra(self):
+        pass
           

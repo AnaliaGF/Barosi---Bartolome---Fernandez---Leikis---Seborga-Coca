@@ -13,6 +13,14 @@ obra2 = gestion.nueva_obra()
 # Inicio Ejercicio 7
 
 # Ejercicio 8
+
+NuevaObra = Obra()
+
+NuevaObra.id_etapa = 10
+NuevaObra.nombre = "Soterramiento Tren Sarmiento"
+
+NuevaObra.nuevo_proyecto()
+
 obra1.nuevo_proyecto()
 obra2.nuevo_proyecto()
 

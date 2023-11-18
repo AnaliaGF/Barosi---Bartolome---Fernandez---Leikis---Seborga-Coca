@@ -61,7 +61,7 @@ class GestionarObra(ABC):
                     etapa = Etapa.get_or_create(nombre=row["etapa"])                
                     tipo_obra = Tipo_obra.get_or_create(nombre=row["tipo"])
                     area_responsable = Area_responsable.get_or_create(nombre=row["area_responsable"])
-                    barrio = Barrio.get_or_create(nombre=row["barrio"])
+                    barrio = Barrio.get_or_create(nombre=row["barrio"], comuna=row["comuna"])
                     empresa = Empresa.get_or_create(nombre=row["licitacion_oferta_empresa"], cuit=row["cuit_contratista"])
                     tipo_licitacion = Tipo_licitacion.get_or_create(nombre=row["contratacion_tipo"])
 
@@ -122,8 +122,19 @@ class GestionarObra(ABC):
         imagen_2 = input("Ingrese la URL de la imagen 2: ")
         imagen_3 = input("Ingrese la URL de la imagen 3: ")
         imagen_4 = input("Ingrese la URL de la imagen 4: ")
+        
         empresa_nombre = input("Ingrese el nombre de la empresa: ")
         empresa_cuit = input("Ingrese el CUIT de la empresa: ")
+        
+        empresa, _ = Empresa.get(nombre=empresa_nombre, cuit=empresa_cuit)
+
+        if(empresa == None):
+            print("La empresa indicada no existe en los registros. Ingrese una nueva empresa.")
+            
+            empresa_nombre = input("Ingrese el nombre de la empresa: ")
+            empresa_cuit = input("Ingrese el CUIT de la empresa: ") 
+
+
         licitacion_anio = int(input("Ingrese el año de la licitación: "))
         nro_contratacion = input("Ingrese el número de contratación: ")
         mano_obra = input("Ingrese la mano de obra: ")
@@ -133,7 +144,7 @@ class GestionarObra(ABC):
         tipo_licitacion, _ = Tipo_licitacion.get_or_create(nombre=tipo_licitacion_nombre)
         area_responsable, _ = Area_responsable.get_or_create(nombre=area_responsable_nombre)
         barrio, _ = Barrio.get_or_create(nombre=barrio_nombre)
-        empresa, _ = Empresa.get_or_create(nombre=empresa_nombre, cuit=empresa_cuit)
+        
 
         obra = Obra.create(
             nombre=nombre,
