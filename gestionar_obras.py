@@ -129,113 +129,147 @@ class GestionarObra(ABC):
             
                 transaction.rollback()
 
-    @classmethod
+    classmethod
     def nueva_obra(cls):
+       
+       def limpiar_input(input_text):
+           # Convierte a mayúsculas, elimina espacios al inicio y al final, y quita tildes
+           return input_text.upper().strip().replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U")
+    
+       # Opción 1
+       # return Obra()
+    
+       # Opción 2
+       nombre = limpiar_input(input("Ingrese el nombre: "))
+       descripcion = limpiar_input(input("Ingrese la descripción: "))
+       
+       while True:
+           try:
+               tipo_obra = Tipo_obra.get(nombre=limpiar_input(input("Ingrese el tipo de obra: ")))
+           except:
+               print("Tipo de Obra inexistente.")
+               continue
+           else:
+               break
+            
+       while True:
+           try:
+               area_responsable = Area_responsable.get(nombre=limpiar_input(input("Ingrese el área responsable: ")))
+           except:
+               print("Área responsable inexistente.")
+               continue
+           else:
+               break
+            
+       while True:
+           try:
+               barrio = Barrio.get(nombre=limpiar_input(input("Ingrese el nombre del barrio: ")))
+           except:
+               print("Nombre de barrio inexistente.")
+               continue
+           else:
+               break
+            
+       obra = Obra()
+       obra.nombre = nombre
+       obra.descripcion = descripcion
+       obra.id_tipo_obra = tipo_obra
+       obra.id_area_responsable = area_responsable
+       obra.id_barrio = barrio
+    
+       if obra.nuevo_proyecto():
+           print("Nuevo proyecto de obra creado.")
+           return obra
+       else:
+           print("No se pudo crear la nueva obra porque faltaron datos obligatorios.")
+           return None
+
+    @classmethod
+    def obtener_indicadores(cls):
+
+    #     a.Listado de todas las áreas responsables:
+        areas_responsables = [area.nombre for area in Area_responsable.select()]
+        print("Listado de todas las áreas responsables:", areas_responsables)
+
+    #     b.Listado de todos los tipos de obra:
+        tipos_obras = [tipo_obra.nombre for tipo_obra in Tipo_obra.select()]
+        print("Listado de todos los tipos de obra:", tipos_obras)
+
+    #     c.Cantidad de obras que se encuentran en cada etapa:
+        obras_por_etapa = (
+                            Etapa
+                                .select(Etapa.nombre.alias('etapa'), fn.COUNT(Obra.id).alias('cantidad'))
+                                .join(Obra, JOIN.LEFT_OUTER)
+                                .group_by(Etapa.nombre)
+                          ).execute()
+
+        for fila in obras_por_etapa:
+            print(f"Cantidad de obras en la etapa {fila.etapa}: {fila.cantidad}")
         
-        # Opcion 1
-        # return Obra()
+    #     d.Cantidad de obras y monto total de inversión por tipo de obra:
 
+        obras_por_tipo = (
+            Tipo_obra
+            .select(Tipo_obra.nombre, fn.COUNT(Obra.id).alias('cantidad'), fn.SUM(Obra.monto_contrato).alias('monto_total'))
+            .join(Obra)
+            .group_by(Tipo_obra)
+        )
+        for tipo_obra in obras_por_tipo:
+            print(f"Cantidad de obras de tipo {tipo_obra.nombre}: {tipo_obra.cantidad}, Monto total de inversión: ${round(tipo_obra.monto_total, 2)}")
 
-        # Opcion 2
+    #     e.Listado de todos los barrios pertenecientes a las comunas 1, 2 y 3.
 
-        nombre = input("Ingrese el nombre: ")
-        descripcion = input("Ingrese la descripcion: ")
+        comunas = [1, 2, 3]
+        barrios_comunas = (
+            Barrio
+            .select()
+            .join(Obra)
+            .where(Obra.id_barrio.in_(comunas))
+            .distinct()
+        )
+        for barrio in barrios_comunas:
+            print(f"Barrio perteneciente a comunas 1, 2 o 3: {barrio.nombre}")
 
-        while True:
-            try:
-                tipo_obra = Tipo_obra.get(nombre=input("Ingrese el tipo de obra: "))
-            except:
-                print("Tipo de Obra inexistente.")
-                continue
-            else:
-                break
- 
-        while True:
-            try:
-                area_responsable = Area_responsable.get(nombre=input("Ingrese el área responsable: "))
-            except:
-                print("Área responsable inexistente.")
-                continue
-            else:
-                break
+    #     f.Cantidad de obras finalizadas y su y monto total de inversión en la comuna 1:
 
-        while True:
-            try:
-                barrio = Barrio.get(nombre=input("Ingrese el nombre del barrio: "))
-            except:
-                print("Nombre de barrio inexistente.")
-                continue
-            else:
-                break
+        obras_finalizadas_comuna1 = (
+            Obra
+            .select(fn.COUNT(Obra.id).alias('cantidad'), fn.SUM(Obra.monto_contrato).alias('monto_total'))
+            .where((Obra.id_etapa == 1) & (Obra.id_barrio == 1))
+        ).first()
+
+        print(f"Cantidad de obras finalizadas en la comuna 1: {obras_finalizadas_comuna1.cantidad}")
+        print(f"Monto total de inversión en la comuna 1: ${round(obras_finalizadas_comuna1.monto_total, 2)}")
+
+    #     g.Cantidad de obras finalizadas en un plazo menor o igual a 24 meses:
+
+        obras_finalizadas_24_meses = (
+            Obra
+            .select(fn.COUNT(Obra.id).alias('cantidad'))
+            .where((Obra.id_etapa == 1) & (Obra.plazo_meses <= 24))
+        ).scalar()
+
+        print(f"Cantidad de obras finalizadas en un plazo menor o igual a 24 meses: {obras_finalizadas_24_meses}")
+
+    #     h.Porcentaje total de obras finalizadas:
+
+        total_obras_finalizadas = Obra.select(fn.COUNT(Obra.id)).where(Obra.id_etapa == 1).scalar()
+        total_obras = Obra.select(fn.COUNT(Obra.id)).scalar()
+        porcentaje_obras_finalizadas = (total_obras_finalizadas / total_obras) * 100
         
-        obra = Obra()
-        obra.nombre = nombre
-        obra.descripcion = descripcion
-        obra.id_tipo_obra = tipo_obra
-        obra.id_area_responsable = area_responsable
-        obra.id_barrio = barrio
+        print(f"Porcentaje total de obras finalizadas: {round(porcentaje_obras_finalizadas, 2)}%")
 
-        if (obra.nuevo_proyecto() == True):
-            print("Nuevo proyecto de obra creado.")
-            return obra 
-        else:
-            print("No se pudo crear la nueva obra porque faltaron datos obligatorios.")
-            return None
+    #     i.Cantidad total de mano de obra empleada:
 
-    #@classmethod
-    #def obtener_indicadores(cls):
+        mano_obra_total = Obra.select(fn.SUM(Obra.mano_obra)).scalar()
 
-    #Indicadores que faltan:
-        # a.Listado de todas las áreas responsables
-        # b.Listado de todos los tipos de obra.
+        print(f"Cantidad total de mano de obra empleada: {mano_obra_total}")
 
-        # c.Cantidad de obras que se encuentran en cada etapa:
-        #  obras_por_etapa = (
-        #                     Etapa
-        #                         .select(Etapa.nombre.alias('etapa'), fn.COUNT(Obra.id).alias('cantidad'))
-        #                         .join(Obra, JOIN.LEFT_OUTER)
-        #                         .group_by(Etapa.nombre)
-        #                   ).execute()
+    #     j.Monto total de inversión:
 
-        # print(obras_por_etapa)
+        monto_total_inversion = Obra.select(fn.SUM(Obra.monto_contrato)).scalar()
 
-        # for fila in obras_por_etapa:
-        #     print(fila.etapa, fila.cantidad)
-        
-    #Más indicadores que faltan
-        # d.Cantidad de obras y monto total de inversión por tipo de obra.
-        # e.Listado de todos los barrios pertenecientes a las comunas 1, 2 y 3.
-        # f.Cantidad de obras finalizadas y su y monto total de inversión en la comuna 1.
-        # g.Cantidad de obras finalizadas en un plazo menor o igual a 24 meses
-        # h.Porcentaje total de obras finalizadas.
-        # i.Cantidad total de mano de obra empleada.
-        # j.Monto total de inversión.
-
-
-            # # Contar el número total de obras
-            # total_obras = Obra.select().count()
-
-            # if total_obras == 0:
-            #     print("No hay obras en la base de datos.")
-            #     return
-
-            # # Agrega estas líneas para imprimir información adicional
-            # obras_con_avance = Obra.select().where(Obra.porcentaje_avance.is_null(False))
-
-            # # Calcular el monto total de los contratos
-            # monto_total_contratos = Obra.select(fn.SUM(Obra.monto_contrato)).scalar()
-
-            # # Calcular el porcentaje promedio de avance
-            # porcentaje_promedio_avance = Obra.select(fn.AVG(Obra.porcentaje_avance)).scalar()
-
-            # # Obtener la obra con el mayor porcentaje de avance
-            # obra_mayor_avance = (Obra.select().order_by(Obra.porcentaje_avance.desc()).first())
-
-            # print(f"Obras con porcentaje de avance: {obras_con_avance.count()}")                
-            # print(f"Número total de obras: {total_obras}")
-            # print(f"Monto total de contratos: {monto_total_contratos}")
-            # print(f"Porcentaje promedio de avance: {porcentaje_promedio_avance}")
-            # print(f"Obra con mayor porcentaje de avance: {obra_mayor_avance.descripcion}")
+        print(f"Monto total de inversión: ${round(monto_total_inversion, 2)}")
 
     def chequear_base(cls):
         if len(db.get_tables()) > 0:

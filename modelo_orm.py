@@ -129,14 +129,14 @@ class Obra(BaseModel):
     def adjudicar_obra(self):
         while True:
             try:
-                self.cuit = Empresa.get(nombre=input("Ingrese el número de CUIT: "))
+                self.cuit = Empresa.get(nombre=input("Ingrese la empresa a adjudicar la obra: "))
             except:
-                print("CUIT inexistente.")
+                print("Empresa inexistente.")
                 continue
             else:
                 break
         
-        self.nro_expediente = input("Ingrese número de expediente")
+        self.nro_expediente = input("Ingrese número de expediente: ")
 
         self.save()
         print("Obra adjudicada.")
@@ -152,19 +152,19 @@ class Obra(BaseModel):
         print("Obra iniciada.")
         
     def actualizar_porcentaje_avance(self):
-        self.porcentaje_avance = float(input("Ingrese el porcentaje de avance: "))
+        self.porcentaje_avance = float(input("Ingrese el porcentaje de avance actualizado: "))
 
         self.save()
         print("Porcentaje de avance actualizado.")
 
     def incrementar_plazo(self):
-        self.plazo_meses = int(input("Ingrese el plazo en meses: "))
+        self.plazo_meses = int(input("Ingrese el plazo en meses actualizado: "))
 
         self.save()
         print("Plazo incrementado.")
         
     def incrementar_mano_obra(self):
-        self.mano_obra = int(input("Ingrese la cantidad de mano de obra: "))
+        self.mano_obra = int(input("Ingrese la cantidad de mano de obra actualizada: "))
 
         self.save()
         print("Mano de obra incrementada.")
@@ -183,4 +183,4 @@ class Obra(BaseModel):
         self.id_etapa = etapa
     
         self.save()
-        print("Obra resindida.")
+        print("Obra rescindida.")

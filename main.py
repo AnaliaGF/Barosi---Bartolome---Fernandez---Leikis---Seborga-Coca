@@ -5,9 +5,6 @@ gestion = GestionarObra()
 
 gestion.conectar_db()
 
-# Ejercicio 17
-#gestion.obtener_indicadores()
-
 #SOLO SE TIENE QUE EJECUTAR LA PRIMERA VEZ
 if (gestion.chequear_base() == False):
     gestion.mapear_orm()
@@ -19,7 +16,6 @@ if (gestion.chequear_base() == False):
 # Ejercicio 6
 obra1 = gestion.nueva_obra()
 obra2 = gestion.nueva_obra()
-
 
 # Inicio Ejercicio 7
 # Ejercicio 8
@@ -54,6 +50,8 @@ obra1.finalizar_obra()
 # Ejercicio 16
 obra2.rescindir_obra()
 
+# Ejercicio 17
+gestion.obtener_indicadores()
 
 #NuevaObra = Obra()
 
@@ -72,7 +70,3 @@ obra2.rescindir_obra()
 # print("Información de la primera obra despues de iniciar el proyecto:")
 # for key, value in obra2.__dict__.items():
 #     print(f"{key}: {value}")
-
-
-
-
