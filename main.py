@@ -1,6 +1,7 @@
 #from modelo_orm import *
 from gestionar_obras import GestionarObra
 from funciones import *
+from modelo_orm import Obra
 
 gestion = GestionarObra()
 
@@ -53,26 +54,29 @@ while True:
 
 while True:
     respuesta = limpiar_input(input("¿Desea finalizar una obra? (SI/NO): "))
-    if respuesta !='SI' and respuesta !='NO':   
-        print("Debe escribir SI o NO.")    
-    else: 
+    if respuesta != 'SI' and respuesta != 'NO':
+        print("Debe escribir SI o NO.")
+    else:
         if respuesta == 'SI':
+            obras = Obra.select()
+            for obra in obras:
+                print(f"ID: {obra.id}, Nombre: {obra.nombre}")
+
             while True:
                 try:
                     respuesta = int(limpiar_input(input("Ingrese el ID de obra a finalizar: ")))
                     obra = gestion.obtener_obra(respuesta)
-                    if obra == None:
+                    if obra is None:
                         print('Obra Inexistente.')
                         continue
                     else:
                         obra.finalizar_obra()
                         break
-                except:                              
-                    print('El valor ingresado no es valido.')
+                except ValueError:
+                    print('El valor ingresado no es válido.')
                     continue
-        else:              
+        else:
             break
-
 
 while True:
     respuesta = limpiar_input(input("¿Desea rescindir una obra? (SI/NO): "))
@@ -80,6 +84,10 @@ while True:
         print("Debe escribir SI o NO.")    
     else: 
         if respuesta == 'SI':
+            obras = Obra.select()
+            for obra in obras:
+                print(f"ID: {obra.id}, Nombre: {obra.nombre}")
+
             while True:
                 try:
                     respuesta = int(limpiar_input(input("Ingrese el ID de obra a rescindir: ")))
@@ -105,5 +113,3 @@ else:
     if respuesta == 'SI':         
         gestion.obtener_indicadores()
         print ("Fin de los indicadores.")
-
-

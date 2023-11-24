@@ -84,9 +84,11 @@ class Obra(BaseModel):
 
         self.nro_contratacion = input("Ingrese el número de contratación: ")
 
+        etapa = Etapa.get(Etapa.nombre == "EN LICITACION")
+        self.id_etapa = etapa
+
         self.save()
-        print("Contratación iniciada correctamente.")
-    
+        print("Contratación iniciada correctamente.")    
      
     def adjudicar_obra(self):
         empresas = Empresa.select()
@@ -102,6 +104,9 @@ class Obra(BaseModel):
                     print("Empresa inexistente. Por favor, elija una empresa existente.")
         
         self.nro_expediente = input("Ingrese número de expediente: ")
+
+        etapa = Etapa.get(Etapa.nombre == "EN CURSO")
+        self.id_etapa = etapa
 
         self.save()
         print("Obra adjudicada correctamente.")
@@ -147,6 +152,9 @@ class Obra(BaseModel):
             else:
                 break
 
+        etapa = Etapa.get(Etapa.nombre == "INICIADA")
+        self.id_etapa = etapa
+
         self.save()
         print("Obra iniciada correctamente.")
         
@@ -158,6 +166,9 @@ class Obra(BaseModel):
                 print("Debe ingresar un número.")
             else:
                 break
+
+        etapa = Etapa.get(Etapa.nombre == "EN OBRA")
+        self.id_etapa = etapa
 
         self.save()
         print("Porcentaje de avance actualizado correctamente.")
@@ -171,6 +182,9 @@ class Obra(BaseModel):
             else:
                 break
 
+        etapa = Etapa.get(Etapa.nombre == "EN OBRA")
+        self.id_etapa = etapa
+
         self.save()
         print("Plazo incrementado.")
         
@@ -182,6 +196,9 @@ class Obra(BaseModel):
                 print("Debe ingresar un número.")
             else:
                 break
+
+        etapa = Etapa.get(Etapa.nombre == "EN OBRA")
+        self.id_etapa = etapa
 
         self.save()
         print("Mano de obra incrementada.")
