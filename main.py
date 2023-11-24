@@ -60,7 +60,7 @@ while True:
         if respuesta == 'SI':
             obras = Obra.select()
             for obra in obras:
-                print(f"ID: {obra.id}, Nombre: {obra.nombre}")
+                print(f"ID: {obra.id}, Nombre: {obra.nombre}, Porcentaje de avance: {obra.porcentaje_avance}")
 
             while True:
                 try:
