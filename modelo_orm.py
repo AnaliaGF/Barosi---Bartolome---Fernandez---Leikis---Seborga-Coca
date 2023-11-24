@@ -1,5 +1,6 @@
 import datetime
 from peewee import *
+from funciones import *
 
 db = Proxy()
 
@@ -28,7 +29,7 @@ class Barrio(BaseModel):
 class Empresa(BaseModel):
     cuit = CharField()
 
-class Contratacion_tipo(BaseModel):
+class Tipo_contratacion(BaseModel):
     pass
 
 class Obra(BaseModel):
@@ -50,58 +51,14 @@ class Obra(BaseModel):
     imagen_4 = CharField(null=True)
     id_empresa = ForeignKeyField(Empresa, to_field="id", null=True, db_column="id_empresa")
     licitacion_anio = IntegerField(null=True)
-    id_contratacion_tipo = ForeignKeyField(Contratacion_tipo, to_field="id", null=True, db_column="id_contratacion_tipo")
+    id_tipo_contratacion = ForeignKeyField(Tipo_contratacion, to_field="id", null=True, db_column="id_tipo_contratacion")
     nro_contratacion = CharField(null=True)
     mano_obra = CharField(null=True)
     numero_expediente = CharField(null=True)
     destacada = BooleanField(null=False)
     fuente_financiamiento = CharField(null=True)
 
-    # Inicio Ejercicio 5
-
-    def nuevo_proyecto(self):
- 
-        # Opcion 1
-        # self.nombre = input("Ingrese el nombre: ")
-        # self.descripcion = input("Ingrese la descripcion: ")
-
-        # etapa = Etapa.get(Etapa.nombre == "PROYECTO")
-        # self.id_etapa = etapa
-
-        # self.destacada = False
-
-        # while True:
-        #     try:
-        #         self.id_tipo_obra = Tipo_obra.get(nombre=input("Ingrese el tipo de obra: "))
-        #     except:
-        #         print("Tipo de Obra inexistente.")
-        #         continue
-        #     else:
-        #         break
- 
-        # while True:
-        #     try:
-        #         self.id_area_responsable = Area_responsable.get(nombre=input("Ingrese el área responsable: "))
-        #     except:
-        #         print("Área responsable inexistente.")
-        #         continue
-        #     else:
-        #         break
-
-        # while True:
-        #     try:
-        #         self.id_barrio = Barrio.get(nombre=input("Ingrese el nombre del barrio: "))
-        #     except:
-        #         print("Nombre de barrio inexistente.")
-        #         continue
-        #     else:
-        #         break
-
-        # self.save()
-        # print("Nuevo proyecto de obra creado.")
-    
-        # Opcion 2
-        
+    def nuevo_proyecto(self):      
         self.id_etapa = Etapa.get(Etapa.nombre == "PROYECTO")
         self.destacada = False
 
@@ -112,59 +69,119 @@ class Obra(BaseModel):
             return True    
 
     def iniciar_contratacion(self):
+        tipos_contratacion = Tipo_contratacion.select()
+        for tipo in tipos_contratacion:
+            print(tipo.nombre)
+
         while True:
-            try:
-                self.id_contratacion_tipo = Contratacion_tipo.get(nombre=input("Ingrese el tipo de contratación: "))
-            except:
-                print("Tipo de contratacion inexistente.")
-                continue
-            else:
+            tipo_contratacion_nombre = limpiar_input(input("Ingrese el tipo de contratación de la lista anterior: "))
+            tipo_contratacion = next((tipo for tipo in tipos_contratacion if tipo.nombre == tipo_contratacion_nombre), None)
+            if tipo_contratacion:
+                self.id_contratacion_tipo = tipo_contratacion
                 break
-        
+            else:
+                print("Tipo de contratación inexistente. Por favor, elija un tipo existente.")
+
         self.nro_contratacion = input("Ingrese el número de contratación: ")
 
         self.save()
-        print("Contrato iniciado.")
-        
+        print("Contratación iniciada correctamente.")
+    
+     
     def adjudicar_obra(self):
+        empresas = Empresa.select()
+        for empresa in empresas:
+            print(empresa.nombre)
+
         while True:
-            try:
-                self.cuit = Empresa.get(nombre=input("Ingrese la empresa a adjudicar la obra: "))
-            except:
-                print("Empresa inexistente.")
-                continue
-            else:
-                break
+                self.empresa_nombre = limpiar_input(input("Ingrese la empresa a adjudicar de la lista anterior: "))
+                empresa = next((emp for emp in empresas if emp.nombre == self.empresa_nombre), None)
+                if empresa:
+                    break
+                else:
+                    print("Empresa inexistente. Por favor, elija una empresa existente.")
         
         self.nro_expediente = input("Ingrese número de expediente: ")
 
         self.save()
-        print("Obra adjudicada.")
-        
+        print("Obra adjudicada correctamente.")
+
     def iniciar_obra(self):
-        self.destacada = input("Indique si la obra es destacada: ")
-        self.fecha_inicio = input("Ingrese la fecha de inicio (YYYY-MM-DD): ")
-        self.fecha_fin_inicial = input("Ingrese la fecha de fin inicial (YYYY-MM-DD): ")
-        self.fuente_financiamiento = input("Ingrese la fuente de financiamiento: ")
-        self.mano_obra = int(input("Ingrese la cantidad de mano de obra: "))
+        while True:
+            self.destacada = limpiar_input(input("Indique si la obra es destacada (SI/NO): "))
+            if self.destacada!='SI' and self.destacada!='NO':
+                print("Debe escribir SI o NO.")
+            else:
+                break
+
+        while True:           
+            self.fecha_inicio = input("Ingrese fecha de inicio (DD/MM/AAAA): ")
+            try:
+                datetime.datetime.strptime(self.fecha_inicio, '%d/%m/%Y')
+            except ValueError:
+                print ('Fecha inválida.')
+            else:
+                break
+
+        while True:
+            self.fecha_fin_inicial = input("Ingrese fecha de fin estimada (DD/MM/AAAA): ")
+            try:
+                datetime.datetime.strptime(self.fecha_fin_inicial, '%d/%m/%Y')
+            except ValueError:
+                print ('Fecha inválida.')
+            else:
+                break
+    
+        while True:
+            self.fuente_financiamiento = limpiar_input(input("Ingrese la fuente de financiamiento: "))       
+            if self.fuente_financiamiento == "":
+                print("Debe ingresar fuente financiamiento.")
+            else:
+                break
+
+        while True:
+            try:
+                self.mano_obra = int(input("Ingrese en números la cantidad de mano de obra: "))
+            except ValueError:
+                print("Debe ingresar un número.")
+            else:
+                break
 
         self.save()
-        print("Obra iniciada.")
+        print("Obra iniciada correctamente.")
         
     def actualizar_porcentaje_avance(self):
-        self.porcentaje_avance = float(input("Ingrese el porcentaje de avance actualizado: "))
+        while True:
+            try:
+                self.porcentaje_avance = float(input("Ingrese el porcentaje de avance actualizado: "))
+            except ValueError:
+                print("Debe ingresar un número.")
+            else:
+                break
 
         self.save()
-        print("Porcentaje de avance actualizado.")
+        print("Porcentaje de avance actualizado correctamente.")
 
     def incrementar_plazo(self):
-        self.plazo_meses = int(input("Ingrese el plazo en meses actualizado: "))
+        while True:
+            try:
+                self.plazo_meses = int(input("Ingrese el plazo en meses actualizado: "))
+            except ValueError:
+                print("Debe ingresar un número.")
+            else:
+                break
 
         self.save()
         print("Plazo incrementado.")
         
     def incrementar_mano_obra(self):
-        self.mano_obra = int(input("Ingrese la cantidad de mano de obra actualizada: "))
+        while True:
+            try:
+                self.mano_obra = int(input("Ingrese la cantidad de mano de obra actualizada: "))
+            except ValueError:
+                print("Debe ingresar un número.")
+            else:
+                break
 
         self.save()
         print("Mano de obra incrementada.")
@@ -173,7 +190,7 @@ class Obra(BaseModel):
         etapa = Etapa.get(Etapa.nombre == "FINALIZADA")
         self.id_etapa = etapa
             
-        self.porcentaje_avance = Obra.get(Obra.porcentaje_avance == "100")
+        self.porcentaje_avance = 100
 
         self.save()
         print("Obra finalizada.")

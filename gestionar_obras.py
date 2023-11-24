@@ -1,9 +1,11 @@
 from abc import ABC
 from modelo_orm import *
 from peewee import fn
+from funciones import *
 import pandas as pd
 import numpy as np
 import math
+
 
 class GestionarObra(ABC):    
     df = pd.DataFrame()
@@ -12,15 +14,14 @@ class GestionarObra(ABC):
     @classmethod
     def extraer_datos(cls):
         cls.df = pd.read_csv("observatorio-de-obras-urbanas.csv")
-        #.replace("", " ", regex=True)
-
+        
     @classmethod
     def conectar_db(cls):
         db.initialize(SqliteDatabase("obras_urbanas.db"))
 
     @classmethod
     def mapear_orm(cls):
-        db.create_tables([Entorno, Etapa, Tipo_obra, Contratacion_tipo, Area_responsable, Barrio, Empresa, Obra])
+        db.create_tables([Entorno, Etapa, Tipo_obra, Tipo_contratacion, Area_responsable, Barrio, Empresa, Obra])
 
     @classmethod
     def limpiar_datos(cls):
@@ -31,6 +32,8 @@ class GestionarObra(ABC):
             "fecha_inicio",
             "fecha_fin_inicial",
             "porcentaje_avance",
+            "tipo",
+            "contratacion_tipo",
         ]
         cls.df = cls.df.dropna(subset=cols_a_considerar)
 
@@ -40,7 +43,31 @@ class GestionarObra(ABC):
 
         # Elimina el caracter extraño que se encuentra en algunas palabras acentuadas, reemplaza simbolo por ñ. 
         # Elimina acentos, convierte todo a mayuscula y elimina espacios iniciales y finales de modo de minimizar las repeticiones
-        cls.df = cls.df.replace('­', '', regex=True).replace('Ã±', 'ñ', regex=True).replace('á','a', regex=True).replace('é','e', regex=True).replace('í','i', regex=True).replace('ó','o', regex=True).replace('ú', 'u', regex=True).astype(str).apply(lambda col: col.str.upper().str.strip())
+        cls.df = (
+                    cls.df
+                        .replace('­', '', regex=True)
+                        .replace('Â°', 'º', regex=True)
+                        .replace('Ã±', 'ñ', regex=True)
+                        .replace('Ã³', 'O', regex=True)
+                        .replace('I“', 'O', regex=True)                        
+                        .replace('I¹', 'U', regex=True)
+                        .replace('Ãº', 'U', regex=True)
+                        .replace('á','a', regex=True)
+                        .replace('é','e', regex=True)
+                        .replace('í','i', regex=True)
+                        .replace('ó','o', regex=True)
+                        .replace('ú', 'u', regex=True)
+                        .replace('Á', 'A', regex=True)
+                        .replace('É', 'E', regex=True)
+                        .replace('Í', 'I', regex=True)
+                        .replace('Ó', 'O', regex=True)
+                        .replace('Ú', 'U', regex=True)
+                        .replace('\n', ' - ', regex=True)
+                        .replace('\r', ' - ', regex=True)
+                        .replace('\r\n', ' - ', regex=True)
+                        .astype(str)
+                        .apply(lambda col: col.str.upper().str.strip())
+                )
 
         for index, row in cls.df.iterrows():
           
@@ -87,7 +114,7 @@ class GestionarObra(ABC):
                     area_responsable = Area_responsable.get_or_create(nombre=row["area_responsable"])
                     barrio = Barrio.get_or_create(nombre=row["barrio"], comuna=row["comuna"])
                     empresa = Empresa.get_or_create(nombre=row["licitacion_oferta_empresa"], cuit=row["cuit_contratista"])
-                    contratacion_tipo = Contratacion_tipo.get_or_create(nombre=row["contratacion_tipo"])
+                    contratacion_tipo = Tipo_contratacion.get_or_create(nombre=row["contratacion_tipo"])
 
                     obra = Obra.create(
                         nombre=row["nombre"],
@@ -129,60 +156,61 @@ class GestionarObra(ABC):
             
                 transaction.rollback()
 
-    classmethod
+    @classmethod
     def nueva_obra(cls):
-       
-       def limpiar_input(input_text):
-           # Convierte a mayúsculas, elimina espacios al inicio y al final, y quita tildes
-           return input_text.upper().strip().replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U")
-    
-       # Opción 1
-       # return Obra()
-    
-       # Opción 2
-       nombre = limpiar_input(input("Ingrese el nombre: "))
-       descripcion = limpiar_input(input("Ingrese la descripción: "))
-       
-       while True:
-           try:
-               tipo_obra = Tipo_obra.get(nombre=limpiar_input(input("Ingrese el tipo de obra: ")))
-           except:
-               print("Tipo de Obra inexistente.")
-               continue
-           else:
-               break
+      
+        nombre = limpiar_input(input("Ingrese el nombre de la obra: "))
+        descripcion = limpiar_input(input("Ingrese la descripción: "))
+
+        tipos_obras = Tipo_obra.select()
+        for tipo in tipos_obras:
+            print(tipo.nombre)  
+
+        while True:
+                tipo_obra_nombre = limpiar_input(input("Ingrese tipo de obra de la lista anterior: "))
+                tipo_obra = next((tipo for tipo in tipos_obras if tipo.nombre == tipo_obra_nombre), None)
+                if tipo_obra:
+                    break
+                else:
+                    print("Tipo de obra inexistente. Por favor, elija un tipo existente.")
+
+        areas_responsables = Area_responsable.select()
+        for area in areas_responsables:
+            print(area.nombre)
+
+        while True:
+                area_responsable_nombre = limpiar_input(input("Ingrese área responsable de la lista anterior: "))
+                area_responsable = next((area for area in areas_responsables if area.nombre == area_responsable_nombre), None)
+                if area_responsable:
+                    break
+                else:
+                    print("Área responsable inexistente. Por favor, elija un tipo existente.")
+
+        barrios = Barrio.select()
+        for bario in barrios:
+            print(bario.nombre)
+
+        while True:
+                barrio_nombre = limpiar_input(input("Ingrese nombre del barrio de la lista anterior: "))
+                barrio = next((bario for bario in barrios if bario.nombre == barrio_nombre), None)
+                if barrio:
+                    break
+                else:
+                    print("Nombre de barrio inexistente. Por favor, elija un tipo existente.")
             
-       while True:
-           try:
-               area_responsable = Area_responsable.get(nombre=limpiar_input(input("Ingrese el área responsable: ")))
-           except:
-               print("Área responsable inexistente.")
-               continue
-           else:
-               break
-            
-       while True:
-           try:
-               barrio = Barrio.get(nombre=limpiar_input(input("Ingrese el nombre del barrio: ")))
-           except:
-               print("Nombre de barrio inexistente.")
-               continue
-           else:
-               break
-            
-       obra = Obra()
-       obra.nombre = nombre
-       obra.descripcion = descripcion
-       obra.id_tipo_obra = tipo_obra
-       obra.id_area_responsable = area_responsable
-       obra.id_barrio = barrio
-    
-       if obra.nuevo_proyecto():
-           print("Nuevo proyecto de obra creado.")
-           return obra
-       else:
-           print("No se pudo crear la nueva obra porque faltaron datos obligatorios.")
-           return None
+        obra = Obra()
+        obra.nombre = nombre
+        obra.descripcion = descripcion
+        obra.id_tipo_obra = tipo_obra
+        obra.id_area_responsable = area_responsable
+        obra.id_barrio = barrio
+
+        if obra.nuevo_proyecto():
+            print("Nuevo proyecto creado y persistido correctamente.")
+            return obra
+        else:
+            print("No se pudo crear el nuevo proyecto porque faltaron datos obligatorios.")
+            return None
 
     @classmethod
     def obtener_indicadores(cls):
@@ -271,8 +299,14 @@ class GestionarObra(ABC):
 
         print(f"Monto total de inversión: ${round(monto_total_inversion, 2)}")
 
+    @classmethod
     def chequear_base(cls):
         if len(db.get_tables()) > 0:
             return True
         else:
             return False
+
+    @classmethod
+    def obtener_obra(cls, id):
+        obra = Obra.get_or_none(Obra.id == id)
+        return obra
